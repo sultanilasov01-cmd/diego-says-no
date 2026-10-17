@@ -34,6 +34,7 @@
             color: var(--text);
             padding-bottom: 80px;
             line-height: 1.5;
+            overflow-x: hidden;
         }
 
         h1 { font-size: 24px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
@@ -81,7 +82,6 @@
         .btn-success { background: var(--success); color: white; }
         .btn-secondary { background: transparent; border: 2px solid var(--border); color: var(--text); }
 
-        /* === АНИМАЦИИ === */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20% { transform: translateX(-6px) rotate(-1deg); }
@@ -152,6 +152,27 @@
         .hidden { display: none !important; }
         .back-link { display: inline-block; margin-bottom: 10px; color: #665544; text-decoration: none; font-size: 14px; cursor: pointer; }
         .empty-state { text-align: center; padding: 40px; color: #665544; }
+
+        /* === КОНФЕТТИ === */
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            font-size: 40px;
+            pointer-events: none;
+            z-index: 9999;
+            animation: confetti-fall 2.5s ease-in forwards;
+        }
     </style>
 </head>
 <body>
@@ -484,9 +505,8 @@ function showVerdict(id) {
     badge.style.background = rec.verdict === 'Green' ? 'var(--success)' : 'var(--accent)';
     badge.style.color = 'white';
     
-    // Перезапуск анимации при каждом показе
     block.className = 'verdict-block'; 
-    void block.offsetWidth; // Триггер reflow для перезапуска CSS анимации
+    void block.offsetWidth;
     block.className = `verdict-block ${rec.verdict === 'Green' ? 'verdict-green' : 'verdict-red'}`;
     
     const days = Math.ceil(rec.hours / 8);
@@ -500,7 +520,7 @@ function showVerdict(id) {
     } else {
         playSound('error');
         title.textContent = "🛑 СТОП! Дофаминовая ловушка";
-        desc.innerHTML = `Откажись и сэкономишь <b>${rec.hours} часа</b>. Это <b>${days} рабочих дней</b>.`;
+        desc.innerHTML = `Откажись и сэкономь <b>${rec.hours} часа</b>. Это <b>${days} рабочих дней</b>.`;
         const reasons = getReasons(rec.q1, rec.q2, rec.q3);
         reasonsList.innerHTML = reasons.map(r => `<li>${r}</li>`).join('');
         actions.innerHTML = `
@@ -522,6 +542,12 @@ function makeDecision(decision) {
     rec.decision = decision;
     rec.dateResolved = new Date().toISOString();
     saveData();
+    
+    // КОНФЕТТИ ПРИ ОТКАЗЕ!
+    if (decision === 'refused') {
+        celebrateRefusal();
+    }
+    
     alert(decision === 'refused' ? 'Записано: Отказ. Ты спас свои часы!' : 'Записано: Покупка.');
     goToScreen('screen-wins');
 }
@@ -598,7 +624,7 @@ function showDecision(id) {
         block.innerHTML = `<div class="verdict-title">✅ Осознанный выбор</div><div>Это стоило тебе <b>${rec.hours} часа жизни</b>.</div>`;
     } else {
         const reasons = getReasons(rec.q1, rec.q2, rec.q3).map(r => `<li>${r}</li>`).join('');
-        block.innerHTML = `<div class="verdict-title">🛑 СТОП!</div><div>Откажись и сэкономишь <b>${rec.hours} часа</b>.</div><ul class="verdict-reasons">${reasons}</ul>`;
+        block.innerHTML = `<div class="verdict-title">🛑 СТОП!</div><div>Откажись и сэкономь <b>${rec.hours} часа</b>.</div><ul class="verdict-reasons">${reasons}</ul>`;
     }
     
     document.getElementById('d-price').textContent = formatMoney(rec.price) + ' ₽';
@@ -639,6 +665,7 @@ function updateDecision(dec) {
         rec.decision = dec;
         rec.dateResolved = new Date().toISOString();
         saveData();
+        if (dec === 'refused') celebrateRefusal();
         showDecision(rec.id);
     }
 }
@@ -716,6 +743,25 @@ function playSound(type) {
             oscillator.stop(audioCtx.currentTime + 0.2);
         }
     } catch (e) { console.log('Звук не поддерживается'); }
+}
+
+// === КОНФЕТТИ ПРИ ОТКАЗЕ ===
+function celebrateRefusal() {
+    const emojis = ['🍌', '🎉', '💸', '✨', '🏆'];
+    const count = 15;
+    
+    for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.animationDuration = (2 + Math.random() * 1) + 's';
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3000);
+        }, i * 100);
+    }
 }
 
 init();

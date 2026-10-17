@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Диего Says No</title>
     
-    <!-- Отключение кэша для быстрой отладки -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Иконки -->
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
     <link rel="apple-touch-icon" href="/icon-192.png">
@@ -20,8 +18,8 @@
         :root {
             --bg: #F5E6CA;
             --text: #2C1B0E;
-            --accent: #D32F2F; /* Red for Stop */
-            --success: #388E3C; /* Green for Go */
+            --accent: #D32F2F;
+            --success: #388E3C;
             --card-bg: #FFFFFF;
             --border: #E0D0B0;
             --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -34,11 +32,10 @@
             font-family: var(--font-main);
             background-color: var(--bg);
             color: var(--text);
-            padding-bottom: 80px; /* Space for bottom nav */
+            padding-bottom: 80px;
             line-height: 1.5;
         }
 
-        /* Typography & Layout */
         h1 { font-size: 24px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
         h2 { font-size: 18px; font-weight: 700; margin: 20px 0 10px 0; }
         .subtitle { font-size: 14px; color: #665544; margin-bottom: 20px; line-height: 1.4; }
@@ -47,7 +44,6 @@
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Inputs & Forms */
         .input-group { margin-bottom: 16px; }
         label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
         input[type="text"], input[type="number"] {
@@ -62,7 +58,6 @@
         .input-group.has-error input { border-color: var(--accent); }
         .input-group.has-error .error-msg { display: block; }
 
-        /* Toggle Buttons (Yes/No) */
         .toggle-group { display: flex; gap: 8px; margin-top: 8px; }
         .toggle-btn {
             flex: 1; padding: 12px;
@@ -72,10 +67,8 @@
         }
         .toggle-btn.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
 
-        /* Live Hint */
         .live-hint { font-size: 13px; color: #665544; margin-top: 6px; font-style: italic; }
 
-        /* Buttons */
         .btn-primary {
             width: 100%; padding: 16px;
             background: var(--text); color: var(--bg);
@@ -88,26 +81,45 @@
         .btn-success { background: var(--success); color: white; }
         .btn-secondary { background: transparent; border: 2px solid var(--border); color: var(--text); }
 
-        /* Verdict Blocks */
+        /* === АНИМАЦИИ === */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px) rotate(-1deg); }
+            40% { transform: translateX(6px) rotate(1deg); }
+            60% { transform: translateX(-4px) rotate(-0.5deg); }
+            80% { transform: translateX(4px) rotate(0.5deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            50% { transform: scale(1.04); box-shadow: 0 8px 25px rgba(56, 142, 60, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        }
+
         .verdict-block {
             padding: 20px; border-radius: 16px; margin-bottom: 20px;
             color: white; text-align: center;
         }
-        .verdict-green { background: var(--success); }
-        .verdict-red { background: var(--accent); }
+        .verdict-green { 
+            background: var(--success); 
+            animation: pulse 0.8s ease-out;
+        }
+        .verdict-red { 
+            background: var(--accent); 
+            animation: shake 0.5s ease-in-out;
+        }
+        
         .verdict-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
         .verdict-reasons { font-size: 14px; text-align: left; margin-top: 12px; list-style: none; padding: 0; }
         .verdict-reasons li { margin-bottom: 6px; position: relative; padding-left: 16px; }
         .verdict-reasons li::before { content: '•'; position: absolute; left: 0; }
 
-        /* Stats Cards */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .stat-card { background: var(--card-bg); padding: 16px; border-radius: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .stat-value { font-size: 22px; font-weight: 800; color: var(--text); }
         .stat-label { font-size: 12px; color: #665544; margin-top: 4px; }
         .stat-full { grid-column: span 2; }
 
-        /* History List */
         .tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
         .tab { padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; background: #E0D0B0; border: none; white-space: nowrap; }
         .tab.active { background: var(--text); color: var(--bg); }
@@ -125,7 +137,6 @@
         .item-badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #eee; }
         .item-details { font-size: 13px; color: #665544; }
 
-        /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--card-bg);
@@ -138,9 +149,9 @@
         .nav-item.active { color: var(--text); font-weight: 700; }
         .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
 
-        /* Utility */
         .hidden { display: none !important; }
         .back-link { display: inline-block; margin-bottom: 10px; color: #665544; text-decoration: none; font-size: 14px; cursor: pointer; }
+        .empty-state { text-align: center; padding: 40px; color: #665544; }
     </style>
 </head>
 <body>
@@ -225,9 +236,7 @@
         </div>
     </div>
 
-    <div id="v-actions">
-        <!-- Кнопки будут добавлены через JS -->
-    </div>
+    <div id="v-actions"></div>
 </div>
 
 <!-- ЭКРАН 3: МОИ ПОБЕДЫ -->
@@ -299,9 +308,7 @@
     <h1 id="d-title">Название</h1>
     <div id="d-badge" class="item-badge" style="display:inline-block; margin-bottom:16px;">Вердикт</div>
     
-    <div id="d-block" class="verdict-block">
-        <!-- Content same as verdict screen -->
-    </div>
+    <div id="d-block" class="verdict-block"></div>
 
     <div class="stat-card" style="text-align: left; margin-bottom: 20px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
@@ -317,15 +324,11 @@
 
     <div class="subtitle">Ответы:</div>
     <div id="d-answers" style="margin-bottom: 20px;"></div>
-
-    <div id="d-actions">
-        <!-- Buttons for changing decision -->
-    </div>
+    <div id="d-actions"></div>
     
     <button class="btn-primary btn-danger" style="margin-top: 30px; background: transparent; color: var(--accent); border: 1px solid var(--accent);" onclick="deleteCurrentRecord()">Удалить запись</button>
 </div>
 
-<!-- НИЖНЕЕ МЕНЮ -->
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="goToScreen('screen-new', this)">
         <span class="nav-icon">➕</span>Новая
@@ -339,7 +342,6 @@
 </nav>
 
 <script>
-// === STATE & DATA ===
 let state = {
     settings: { income: 47000, hoursMonth: 160, hourlyRate: 293.75 },
     purchases: [],
@@ -347,13 +349,10 @@ let state = {
     tempForm: { q1: null, q2: null, q3: null }
 };
 
-// === INIT ===
 function init() {
     loadData();
     updateSettingsUI();
     renderHistory();
-    
-    // Listeners for live calculation
     document.getElementById('inp-price').addEventListener('input', updateLiveHint);
     document.getElementById('set-income').addEventListener('input', checkSettingsChange);
     document.getElementById('set-hours-month').addEventListener('input', checkSettingsChange);
@@ -369,34 +368,25 @@ function loadData() {
 }
 
 function saveData() {
-    localStorage.setItem('diegoData', JSON.stringify({
-        settings: state.settings,
-        purchases: state.purchases
-    }));
+    localStorage.setItem('diegoData', JSON.stringify({ settings: state.settings, purchases: state.purchases }));
 }
 
-// === NAVIGATION ===
 function goToScreen(screenId, navEl) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
-    
     if (navEl) {
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         navEl.classList.add('active');
     }
-    
     if (screenId === 'screen-wins') renderHistory();
     window.scrollTo(0,0);
 }
 
-// === SCREEN 1: NEW PURCHASE LOGIC ===
 function selectToggle(q, val, el) {
     state.tempForm[q] = val;
     const parent = el.parentElement;
     parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
-    
-    // Clear error
     document.getElementById(`group-${q}`).classList.remove('has-error');
 }
 
@@ -420,7 +410,6 @@ function updateLiveHint() {
 }
 
 function submitPurchase() {
-    // Validation
     let valid = true;
     const name = document.getElementById('inp-name').value.trim();
     const price = parseFloat(document.getElementById('inp-price').value);
@@ -442,15 +431,13 @@ function submitPurchase() {
     
     if (!valid) return;
     
-    // Create Record
     const hours = (price / state.settings.hourlyRate).toFixed(1);
     const record = {
-        id: Date.now(),
-        name, price, 
+        id: Date.now(), name, price, 
         q1: state.tempForm.q1, q2: state.tempForm.q2, q3: state.tempForm.q3,
         hours: hours,
         verdict: calculateVerdict(state.tempForm.q1, state.tempForm.q2, state.tempForm.q3),
-        decision: null, // null, 'refused', 'bought'
+        decision: null,
         dateCheck: new Date().toISOString(),
         dateResolved: null
     };
@@ -458,7 +445,6 @@ function submitPurchase() {
     state.purchases.unshift(record);
     saveData();
     
-    // Reset Form
     document.getElementById('inp-name').value = '';
     document.getElementById('inp-price').value = '';
     state.tempForm = { q1: null, q2: null, q3: null };
@@ -468,9 +454,7 @@ function submitPurchase() {
     showVerdict(record.id);
 }
 
-// === VERDICT LOGIC ===
 function calculateVerdict(q1, q2, q3) {
-    // Green only if: Q1=YES, Q2=NO, Q3=NO
     if (q1 === true && q2 === false && q3 === false) return 'Green';
     return 'Red';
 }
@@ -483,7 +467,6 @@ function getReasons(q1, q2, q3) {
     return reasons;
 }
 
-// === SCREEN 2: SHOW VERDICT ===
 function showVerdict(id) {
     const rec = state.purchases.find(p => p.id === id);
     if (!rec) return;
@@ -501,25 +484,25 @@ function showVerdict(id) {
     badge.style.background = rec.verdict === 'Green' ? 'var(--success)' : 'var(--accent)';
     badge.style.color = 'white';
     
+    // Перезапуск анимации при каждом показе
+    block.className = 'verdict-block'; 
+    void block.offsetWidth; // Триггер reflow для перезапуска CSS анимации
     block.className = `verdict-block ${rec.verdict === 'Green' ? 'verdict-green' : 'verdict-red'}`;
     
     const days = Math.ceil(rec.hours / 8);
     
     if (rec.verdict === 'Green') {
-        playSound('success'); // <-- ЗВУК УСПЕХА
+        playSound('success');
         title.textContent = "✅ Осознанный выбор";
         desc.innerHTML = `Это стоило тебе <b>${rec.hours} часа жизни</b>. Это <b>${days} рабочих дней</b>.<br><br>Все три ответа за покупку: обдумано, деньги не важнее вещи, замены дома нет.`;
         reasonsList.innerHTML = "";
-        
         actions.innerHTML = `<button class="btn-primary btn-success" onclick="makeDecision('bought')">Купил осознанно</button>`;
     } else {
-        playSound('error'); // <-- ЗВУК ОШИБКИ/СТОП
+        playSound('error');
         title.textContent = "🛑 СТОП! Дофаминовая ловушка";
         desc.innerHTML = `Откажись и сэкономишь <b>${rec.hours} часа</b>. Это <b>${days} рабочих дней</b>.`;
-        
         const reasons = getReasons(rec.q1, rec.q2, rec.q3);
         reasonsList.innerHTML = reasons.map(r => `<li>${r}</li>`).join('');
-        
         actions.innerHTML = `
             <button class="btn-primary btn-success" onclick="makeDecision('refused')">Отказался</button>
             <button class="btn-primary btn-danger" style="margin-top:10px;" onclick="makeDecision('bought')">Всё равно купил</button>
@@ -536,19 +519,14 @@ function showVerdict(id) {
 function makeDecision(decision) {
     const rec = state.purchases.find(p => p.id === state.currentId);
     if (!rec) return;
-    
     rec.decision = decision;
     rec.dateResolved = new Date().toISOString();
     saveData();
-    
-    // Show confirmation and redirect
     alert(decision === 'refused' ? 'Записано: Отказ. Ты спас свои часы!' : 'Записано: Покупка.');
     goToScreen('screen-wins');
 }
 
-// === SCREEN 3: HISTORY & STATS ===
 function renderHistory(filter = 'all') {
-    // Stats
     const refused = state.purchases.filter(p => p.decision === 'refused');
     const bought = state.purchases.filter(p => p.decision === 'bought');
     const resolvedCount = refused.length + bought.length;
@@ -559,10 +537,8 @@ function renderHistory(filter = 'all') {
     
     document.getElementById('stat-saved-rub').textContent = formatMoney(savedRub) + ' ₽';
     document.getElementById('stat-saved-label').textContent = refused.length > 0 ? `на ${refused.length} отказах` : 'Сберегли';
-    
     document.getElementById('stat-saved-hours').textContent = savedHours.toFixed(1) + ' ч';
     document.getElementById('stat-saved-days').textContent = refused.length > 0 ? `${Math.ceil(savedHours/8)} рабочих дней` : 'Сохранено часов';
-    
     document.getElementById('stat-rate').textContent = rate + '%';
     document.getElementById('stat-rate-label').textContent = resolvedCount > 0 ? `${refused.length} из ${resolvedCount} проверок закончились отказом` : 'Доля отказов';
     
@@ -570,23 +546,20 @@ function renderHistory(filter = 'all') {
     document.getElementById('count-refused').textContent = refused.length;
     document.getElementById('count-bought').textContent = bought.length;
     
-    // List
     const list = document.getElementById('history-list');
     let items = state.purchases;
     if (filter === 'refused') items = refused;
     if (filter === 'bought') items = bought;
     
     if (items.length === 0) {
-        list.innerHTML = `<div class="empty-state" style="text-align:center; padding:40px; color:#665544;">${filter === 'all' ? 'Проверок ещё не было' : (filter === 'refused' ? 'Отказов пока нет' : 'Осознанных покупок пока нет')}</div>`;
+        list.innerHTML = `<div class="empty-state">${filter === 'all' ? 'Проверок ещё не было' : (filter === 'refused' ? 'Отказов пока нет' : 'Осознанных покупок пока нет')}</div>`;
         return;
     }
     
     list.innerHTML = items.map(p => {
-        let statusClass = 'pending';
-        let statusText = 'Ждёт решения';
+        let statusClass = 'pending', statusText = 'Ждёт решения';
         if (p.decision === 'refused') { statusClass = 'refused'; statusText = 'Отказ'; }
         if (p.decision === 'bought') { statusClass = 'bought'; statusText = 'Покупка'; }
-        
         return `
             <div class="history-item ${statusClass}" onclick="showDecision(${p.id})">
                 <div class="item-header">
@@ -605,7 +578,6 @@ function filterHistory(type, el) {
     renderHistory(type);
 }
 
-// === SCREEN 5: DECISION DETAILS ===
 function showDecision(id) {
     const rec = state.purchases.find(p => p.id === id);
     if (!rec) return;
@@ -617,10 +589,10 @@ function showDecision(id) {
     badge.style.background = rec.verdict === 'Green' ? 'var(--success)' : 'var(--accent)';
     badge.style.color = 'white';
     
-    // Reuse verdict block logic
     const block = document.getElementById('d-block');
+    block.className = 'verdict-block';
+    void block.offsetWidth;
     block.className = `verdict-block ${rec.verdict === 'Green' ? 'verdict-green' : 'verdict-red'}`;
-    const days = Math.ceil(rec.hours / 8);
     
     if (rec.verdict === 'Green') {
         block.innerHTML = `<div class="verdict-title">✅ Осознанный выбор</div><div>Это стоило тебе <b>${rec.hours} часа жизни</b>.</div>`;
@@ -633,7 +605,6 @@ function showDecision(id) {
     document.getElementById('d-hours').textContent = rec.hours + ' ч';
     document.getElementById('d-date-resolved').textContent = rec.dateResolved ? new Date(rec.dateResolved).toLocaleDateString('ru-RU') : 'Не принято';
     
-    // Answers
     const qText = [
         {q: rec.q1, txt: "Думал > 3 дней?", exp: rec.q1 ? "Обдуманно" : "Импульс"},
         {q: rec.q2, txt: "Взял бы наличные?", exp: rec.q2 ? "Деньги важнее" : "Вещь важнее"},
@@ -645,16 +616,12 @@ function showDecision(id) {
         </div>
     `).join('');
     
-    // Actions
     const actions = document.getElementById('d-actions');
     if (!rec.decision) {
          if (rec.verdict === 'Green') {
             actions.innerHTML = `<button class="btn-primary btn-success" onclick="updateDecision('bought')">Купил осознанно</button>`;
          } else {
-            actions.innerHTML = `
-                <button class="btn-primary btn-success" onclick="updateDecision('refused')">Отказался</button>
-                <button class="btn-primary btn-danger" style="margin-top:10px;" onclick="updateDecision('bought')">Всё равно купил</button>
-            `;
+            actions.innerHTML = `<button class="btn-primary btn-success" onclick="updateDecision('refused')">Отказался</button><button class="btn-primary btn-danger" style="margin-top:10px;" onclick="updateDecision('bought')">Всё равно купил</button>`;
          }
     } else {
         actions.innerHTML = `<div style="text-align:center; color:#665544; margin-bottom:10px;">Решение: <b>${rec.decision === 'refused' ? 'Отказ' : 'Покупка'}</b>. Можно изменить.</div>
@@ -663,7 +630,6 @@ function showDecision(id) {
             <button class="toggle-btn ${rec.decision==='bought'?'selected':''}" onclick="updateDecision('bought')">Купил</button>
         </div>`;
     }
-    
     goToScreen('screen-decision');
 }
 
@@ -673,7 +639,7 @@ function updateDecision(dec) {
         rec.decision = dec;
         rec.dateResolved = new Date().toISOString();
         saveData();
-        showDecision(rec.id); // Refresh UI
+        showDecision(rec.id);
     }
 }
 
@@ -685,7 +651,6 @@ function deleteCurrentRecord() {
     }
 }
 
-// === SCREEN 4: SETTINGS ===
 function updateSettingsUI() {
     document.getElementById('set-income').value = state.settings.income;
     document.getElementById('set-hours-month').value = state.settings.hoursMonth;
@@ -698,9 +663,7 @@ function checkSettingsChange() {
     const hrs = parseFloat(document.getElementById('set-hours-month').value) || 1;
     const rate = inc / hrs;
     document.getElementById('set-hourly-rate').value = rate.toFixed(2);
-    
-    const btn = document.getElementById('btn-save-settings');
-    btn.disabled = (inc === state.settings.income && hrs === state.settings.hoursMonth);
+    document.getElementById('btn-save-settings').disabled = (inc === state.settings.income && hrs === state.settings.hoursMonth);
 }
 
 function saveSettings() {
@@ -726,32 +689,25 @@ function resetHistory() {
     }
 }
 
-// === UTILS ===
-function formatMoney(num) {
-    return num.toLocaleString('ru-RU');
-}
+function formatMoney(num) { return num.toLocaleString('ru-RU'); }
 
-// === ЗВУКОВЫЕ ЭФФЕКТЫ (Web Audio API) ===
 function playSound(type) {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-        
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         
         if (type === 'success') {
-            // "Дзынь" — высокий приятный тон, две ноты
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);      // нота Ля
-            oscillator.frequency.setValueAtTime(1320, audioCtx.currentTime + 0.1); // нота Ми выше
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            oscillator.frequency.setValueAtTime(1320, audioCtx.currentTime + 0.1);
             gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
             oscillator.start(audioCtx.currentTime);
             oscillator.stop(audioCtx.currentTime + 0.4);
         } else if (type === 'error') {
-            // "Бип" — низкий короткий сигнал
             oscillator.type = 'square';
             oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
             gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
@@ -759,19 +715,11 @@ function playSound(type) {
             oscillator.start(audioCtx.currentTime);
             oscillator.stop(audioCtx.currentTime + 0.2);
         }
-    } catch (e) {
-        // Если звук не поддерживается — просто молчим
-        console.log('Звук не поддерживается');
-    }
+    } catch (e) { console.log('Звук не поддерживается'); }
 }
 
-// === START ===
 init();
-
-// Service Worker Registration
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-}
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }
 </script>
 </body>
 </html>

@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Диего Says No</title>
     
-    <!-- Отключение кэша -->
+    <!-- Отключение кэша для быстрой отладки -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
     <!-- Иконки -->
-    <link rel="manifest" href="/manifest.json?v=2">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
-    <link rel="apple-touch-icon" href="/icon-192.png?v=2">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
     <meta name="theme-color" content="#F5E6CA">
+    
     <style>
         :root {
             --bg: #F5E6CA;
@@ -505,12 +506,14 @@ function showVerdict(id) {
     const days = Math.ceil(rec.hours / 8);
     
     if (rec.verdict === 'Green') {
+        playSound('success'); // <-- ЗВУК УСПЕХА
         title.textContent = "✅ Осознанный выбор";
         desc.innerHTML = `Это стоило тебе <b>${rec.hours} часа жизни</b>. Это <b>${days} рабочих дней</b>.<br><br>Все три ответа за покупку: обдумано, деньги не важнее вещи, замены дома нет.`;
         reasonsList.innerHTML = "";
         
         actions.innerHTML = `<button class="btn-primary btn-success" onclick="makeDecision('bought')">Купил осознанно</button>`;
     } else {
+        playSound('error'); // <-- ЗВУК ОШИБКИ/СТОП
         title.textContent = "🛑 СТОП! Дофаминовая ловушка";
         desc.innerHTML = `Откажись и сэкономишь <b>${rec.hours} часа</b>. Это <b>${days} рабочих дней</b>.`;
         
@@ -728,7 +731,41 @@ function formatMoney(num) {
     return num.toLocaleString('ru-RU');
 }
 
-// Start
+// === ЗВУКОВЫЕ ЭФФЕКТЫ (Web Audio API) ===
+function playSound(type) {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        if (type === 'success') {
+            // "Дзынь" — высокий приятный тон, две ноты
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);      // нота Ля
+            oscillator.frequency.setValueAtTime(1320, audioCtx.currentTime + 0.1); // нота Ми выше
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.4);
+        } else if (type === 'error') {
+            // "Бип" — низкий короткий сигнал
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        }
+    } catch (e) {
+        // Если звук не поддерживается — просто молчим
+        console.log('Звук не поддерживается');
+    }
+}
+
+// === START ===
 init();
 
 // Service Worker Registration

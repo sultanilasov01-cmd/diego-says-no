@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Диего Says No</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="theme-color" content="#F5E6CA">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        :root {
+            --bg: #F5E6CA;
+            --text: #2C1B0E;
+            --accent: #D32F2F; /* Red for Stop */
+            --success: #388E3C; /* Green for Go */
+            --card-bg: #FFFFFF;
+            --border: #E0D0B0;
+            --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            margin: 0; padding: 0;
+            font-family: var(--font-main);
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 80px; /* Space for bottom nav */
+            line-height: 1.5;
+        }
+
+        /* Typography & Layout */
+        h1 { font-size: 24px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
+        h2 { font-size: 18px; font-weight: 700; margin: 20px 0 10px 0; }
+        .subtitle { font-size: 14px; color: #665544; margin-bottom: 20px; line-height: 1.4; }
+        
+        .screen { display: none; padding: 20px; animation: fadeIn 0.2s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Inputs & Forms */
+        .input-group { margin-bottom: 16px; }
+        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+        input[type="text"], input[type="number"] {
+            width: 100%; padding: 14px;
+            border: 2px solid var(--border); border-radius: 12px;
+            font-size: 16px; background: var(--card-bg); color: var(--text);
+            outline: none; transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--text); }
+        
+        .error-msg { color: var(--accent); font-size: 12px; margin-top: 4px; display: none; }
+        .input-group.has-error input { border-color: var(--accent); }
+        .input-group.has-error .error-msg { display: block; }
+
+        /* Toggle Buttons (Yes/No) */
+        .toggle-group { display: flex; gap: 8px; margin-top: 8px; }
+        .toggle-btn {
+            flex: 1; padding: 12px;
+            border: 2px solid var(--border); border-radius: 10px;
+            background: var(--card-bg); font-weight: 600; font-size: 14px;
+            text-align: center; cursor: pointer; transition: all 0.2s;
+        }
+        .toggle-btn.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+        /* Live Hint */
+        .live-hint { font-size: 13px; color: #665544; margin-top: 6px; font-style: italic; }
+
+        /* Buttons */
+        .btn-primary {
+            width: 100%; padding: 16px;
+            background: var(--text); color: var(--bg);
+            border: none; border-radius: 12px;
+            font-size: 17px; font-weight: 800;
+            cursor: pointer; margin-top: 20px;
+        }
+        .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-danger { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-secondary { background: transparent; border: 2px solid var(--border); color: var(--text); }
+
+        /* Verdict Blocks */
+        .verdict-block {
+            padding: 20px; border-radius: 16px; margin-bottom: 20px;
+            color: white; text-align: center;
+        }
+        .verdict-green { background: var(--success); }
+        .verdict-red { background: var(--accent); }
+        .verdict-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .verdict-reasons { font-size: 14px; text-align: left; margin-top: 12px; list-style: none; padding: 0; }
+        .verdict-reasons li { margin-bottom: 6px; position: relative; padding-left: 16px; }
+        .verdict-reasons li::before { content: '•'; position: absolute; left: 0; }
+
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card-bg); padding: 16px; border-radius: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stat-value { font-size: 22px; font-weight: 800; color: var(--text); }
+        .stat-label { font-size: 12px; color: #665544; margin-top: 4px; }
+        .stat-full { grid-column: span 2; }
+
+        /* History List */
+        .tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
+        .tab { padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; background: #E0D0B0; border: none; white-space: nowrap; }
+        .tab.active { background: var(--text); color: var(--bg); }
+        
+        .history-item {
+            background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 10px;
+            cursor: pointer; border-left: 4px solid #ccc;
+        }
+        .history-item.refused { border-left-color: var(--success); }
+        .history-item.bought { border-left-color: var(--accent); }
+        .history-item.pending { border-left-color: #FFA000; }
+        
+        .item-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .item-title { font-weight: 700; font-size: 16px; }
+        .item-badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #eee; }
+        .item-details { font-size: 13px; color: #665544; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--card-bg);
+            display: flex; justify-content: space-around;
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+            border-top: 1px solid var(--border);
+            z-index: 100;
+        }
+        .nav-item { text-align: center; font-size: 11px; color: #665544; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--text); font-weight: 700; }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .back-link { display: inline-block; margin-bottom: 10px; color: #665544; text-decoration: none; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<!-- ЭКРАН 1: НОВАЯ ПОКУПКА -->
+<div id="screen-new" class="screen active">
+    <h1>Новая покупка</h1>
+    <div class="subtitle">Никаких таймеров и пауз: решаешь здесь и сейчас. Три честных ответа — и вердикт скажет прямо, покупка это или импульс.</div>
+    
+    <div class="input-group" id="group-name">
+        <label>Что проверяем?</label>
+        <input type="text" id="inp-name" placeholder="Например, механическая клавиатура">
+        <div class="error-msg">Напиши, что именно проверяешь</div>
+    </div>
+    
+    <div class="input-group" id="group-price">
+        <label>Сумма к оплате (₽)</label>
+        <input type="number" id="inp-price" placeholder="0" inputmode="numeric">
+        <div class="live-hint" id="hint-price">Введи сумму, чтобы увидеть цену в часах</div>
+        <div class="error-msg">Введи сумму больше нуля</div>
+    </div>
+    
+    <div class="subtitle" style="margin-top: 24px;">3 быстрых вопроса<br><span style="font-size:12px;opacity:0.8">Ответь честно до того, как приложить карту</span></div>
+    
+    <div class="input-group" id="group-q1">
+        <label>1. Думал об этой покупке больше 3 дней?</label>
+        <div class="toggle-group">
+            <div class="toggle-btn" onclick="selectToggle('q1', true, this)">Да</div>
+            <div class="toggle-btn" onclick="selectToggle('q1', false, this)">Нет</div>
+        </div>
+        <div class="error-msg">Ответь на этот вопрос</div>
+    </div>
+
+    <div class="input-group" id="group-q2">
+        <label>2. Взял бы наличные деньгами вместо этой вещи?</label>
+        <div class="toggle-group">
+            <div class="toggle-btn" onclick="selectToggle('q2', true, this)">Да</div>
+            <div class="toggle-btn" onclick="selectToggle('q2', false, this)">Нет</div>
+        </div>
+        <div class="error-msg">Ответь на этот вопрос</div>
+    </div>
+
+    <div class="input-group" id="group-q3">
+        <label>3. Есть ли дома аналог, который закрывает потребность?</label>
+        <div class="toggle-group">
+            <div class="toggle-btn" onclick="selectToggle('q3', true, this)">Да</div>
+            <div class="toggle-btn" onclick="selectToggle('q3', false, this)">Нет</div>
+        </div>
+        <div class="error-msg">Ответь на этот вопрос</div>
+    </div>
+
+    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; margin-top: 20px; text-align: center;">
+        <div style="font-size: 12px; color: #665544;">Цена в часах работы</div>
+        <div style="font-size: 32px; font-weight: 800;" id="display-hours">0 ч</div>
+        <div style="font-size: 14px;" id="display-days">0 рабочих дней</div>
+    </div>
+
+    <button class="btn-primary" onclick="submitPurchase()">Получить вердикт</button>
+</div>
+
+<!-- ЭКРАН 2: ВЕРДИКТ -->
+<div id="screen-verdict" class="screen">
+    <div class="back-link" onclick="goToScreen('screen-new')">← Новая покупка</div>
+    <h1 id="v-title">Название</h1>
+    <div id="v-badge" class="item-badge" style="display:inline-block; margin-bottom:16px;">Вердикт</div>
+    
+    <div id="v-block" class="verdict-block">
+        <div class="verdict-title" id="v-text-title"></div>
+        <div id="v-text-desc"></div>
+        <ul class="verdict-reasons" id="v-reasons"></ul>
+    </div>
+
+    <div class="stat-card" style="margin-bottom: 20px; text-align: left;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span>Сумма:</span> <b id="v-price"></b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span>Часы работы:</span> <b id="v-hours"></b>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+            <span>Дата проверки:</span> <b id="v-date"></b>
+        </div>
+    </div>
+
+    <div id="v-actions">
+        <!-- Кнопки будут добавлены через JS -->
+    </div>
+</div>
+
+<!-- ЭКРАН 3: МОИ ПОБЕДЫ -->
+<div id="screen-wins" class="screen">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>Мои победы</h1>
+        <button class="btn-secondary" style="padding: 8px 12px; font-size:12px;" onclick="goToScreen('screen-new')">Проверить покупку</button>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="stat-saved-rub">0 ₽</div>
+            <div class="stat-label" id="stat-saved-label">Сберегли</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="stat-saved-hours">0 ч</div>
+            <div class="stat-label" id="stat-saved-days">Сохранено часов</div>
+        </div>
+        <div class="stat-card stat-full">
+            <div class="stat-value" id="stat-rate">0%</div>
+            <div class="stat-label" id="stat-rate-label">Доля отказов</div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="filterHistory('all', this)">Все (<span id="count-all">0</span>)</button>
+        <button class="tab" onclick="filterHistory('refused', this)">Отказы (<span id="count-refused">0</span>)</button>
+        <button class="tab" onclick="filterHistory('bought', this)">Покупки (<span id="count-bought">0</span>)</button>
+    </div>
+
+    <div id="history-list"></div>
+</div>
+
+<!-- ЭКРАН 4: НАСТРОЙКИ -->
+<div id="screen-settings" class="screen">
+    <h1>Настройки</h1>
+    
+    <div class="stat-card" style="text-align: left; margin-bottom: 20px;">
+        <div class="subtitle" style="margin-top:0;">Стоимость часа работы<br>По этой ставке каждая цена превращается в часы вашей работы.</div>
+        
+        <div class="input-group">
+            <label>Доход в месяц (₽)</label>
+            <input type="number" id="set-income" placeholder="47000">
+        </div>
+        <div class="input-group">
+            <label>Рабочих часов в месяц</label>
+            <input type="number" id="set-hours-month" placeholder="160">
+        </div>
+        <div class="input-group">
+            <label>Час работы (₽ / час)</label>
+            <input type="text" id="set-hourly-rate" disabled style="background:#eee;">
+            <div class="live-hint">Считается автоматически: доход делится на рабочие часы</div>
+        </div>
+        
+        <button class="btn-primary" id="btn-save-settings" onclick="saveSettings()" disabled>Сохранить</button>
+        <div class="live-hint" style="text-align:center; margin-top:10px;" id="current-rate-display">Текущая ставка: 0 ₽ в час</div>
+    </div>
+
+    <div class="stat-card" style="text-align: left; border: 2px solid var(--accent);">
+        <div class="subtitle" style="margin-top:0; color:var(--accent); font-weight:700;">Опасная зона</div>
+        <div style="font-size:14px; margin-bottom:12px;">Очистить накопленную историю проверок и счётчик сэкономленных часов.</div>
+        <button class="btn-primary btn-danger" style="margin-top:0;" onclick="resetHistory()">Сбросить историю и начать заново</button>
+    </div>
+</div>
+
+<!-- ЭКРАН 5: РЕШЕНИЕ (ДЕТАЛИ) -->
+<div id="screen-decision" class="screen">
+    <div class="back-link" onclick="goToScreen('screen-wins')">← Мои победы</div>
+    <h1 id="d-title">Название</h1>
+    <div id="d-badge" class="item-badge" style="display:inline-block; margin-bottom:16px;">Вердикт</div>
+    
+    <div id="d-block" class="verdict-block">
+        <!-- Content same as verdict screen -->
+    </div>
+
+    <div class="stat-card" style="text-align: left; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span>Сумма:</span> <b id="d-price"></b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span>Часы работы:</span> <b id="d-hours"></b>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+            <span>Дата решения:</span> <b id="d-date-resolved">Не принято</b>
+        </div>
+    </div>
+
+    <div class="subtitle">Ответы:</div>
+    <div id="d-answers" style="margin-bottom: 20px;"></div>
+
+    <div id="d-actions">
+        <!-- Buttons for changing decision -->
+    </div>
+    
+    <button class="btn-primary btn-danger" style="margin-top: 30px; background: transparent; color: var(--accent); border: 1px solid var(--accent);" onclick="deleteCurrentRecord()">Удалить запись</button>
+</div>
+
+<!-- НИЖНЕЕ МЕНЮ -->
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="goToScreen('screen-new', this)">
+        <span class="nav-icon">➕</span>Новая
+    </div>
+    <div class="nav-item" onclick="goToScreen('screen-wins', this)">
+        <span class="nav-icon">🏆</span>Победы
+    </div>
+    <div class="nav-item" onclick="goToScreen('screen-settings', this)">
+        <span class="nav-icon">⚙️</span>Настройки
+    </div>
+</nav>
+
+<script>
+// === STATE & DATA ===
+let state = {
+    settings: { income: 47000, hoursMonth: 160, hourlyRate: 293.75 },
+    purchases: [],
+    currentId: null,
+    tempForm: { q1: null, q2: null, q3: null }
+};
+
+// === INIT ===
+function init() {
+    loadData();
+    updateSettingsUI();
+    renderHistory();
+    
+    // Listeners for live calculation
+    document.getElementById('inp-price').addEventListener('input', updateLiveHint);
+    document.getElementById('set-income').addEventListener('input', checkSettingsChange);
+    document.getElementById('set-hours-month').addEventListener('input', checkSettingsChange);
+}
+
+function loadData() {
+    const saved = localStorage.getItem('diegoData');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        state.settings = parsed.settings || state.settings;
+        state.purchases = parsed.purchases || [];
+    }
+}
+
+function saveData() {
+    localStorage.setItem('diegoData', JSON.stringify({
+        settings: state.settings,
+        purchases: state.purchases
+    }));
+}
+
+// === NAVIGATION ===
+function goToScreen(screenId, navEl) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    
+    if (navEl) {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        navEl.classList.add('active');
+    }
+    
+    if (screenId === 'screen-wins') renderHistory();
+    window.scrollTo(0,0);
+}
+
+// === SCREEN 1: NEW PURCHASE LOGIC ===
+function selectToggle(q, val, el) {
+    state.tempForm[q] = val;
+    const parent = el.parentElement;
+    parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    
+    // Clear error
+    document.getElementById(`group-${q}`).classList.remove('has-error');
+}
+
+function updateLiveHint() {
+    const price = parseFloat(document.getElementById('inp-price').value);
+    const hint = document.getElementById('hint-price');
+    const dispHours = document.getElementById('display-hours');
+    const dispDays = document.getElementById('display-days');
+    
+    if (price > 0) {
+        const hours = (price / state.settings.hourlyRate).toFixed(1);
+        const days = Math.ceil(hours / 8);
+        hint.textContent = `${formatMoney(price)} ₽ это ${hours} ч работы`;
+        dispHours.textContent = `${hours} ч`;
+        dispDays.textContent = `Это ${days} рабочих дней`;
+    } else {
+        hint.textContent = "Введи сумму, чтобы увидеть цену в часах";
+        dispHours.textContent = "0 ч";
+        dispDays.textContent = "0 рабочих дней";
+    }
+}
+
+function submitPurchase() {
+    // Validation
+    let valid = true;
+    const name = document.getElementById('inp-name').value.trim();
+    const price = parseFloat(document.getElementById('inp-price').value);
+    
+    if (!name) { document.getElementById('group-name').classList.add('has-error'); valid = false; }
+    else document.getElementById('group-name').classList.remove('has-error');
+    
+    if (!price || price <= 0) { document.getElementById('group-price').classList.add('has-error'); valid = false; }
+    else document.getElementById('group-price').classList.remove('has-error');
+    
+    ['q1', 'q2', 'q3'].forEach(q => {
+        if (state.tempForm[q] === null) {
+            document.getElementById(`group-${q}`).classList.add('has-error');
+            valid = false;
+        } else {
+            document.getElementById(`group-${q}`).classList.remove('has-error');
+        }
+    });
+    
+    if (!valid) return;
+    
+    // Create Record
+    const hours = (price / state.settings.hourlyRate).toFixed(1);
+    const record = {
+        id: Date.now(),
+        name, price, 
+        q1: state.tempForm.q1, q2: state.tempForm.q2, q3: state.tempForm.q3,
+        hours: hours,
+        verdict: calculateVerdict(state.tempForm.q1, state.tempForm.q2, state.tempForm.q3),
+        decision: null, // null, 'refused', 'bought'
+        dateCheck: new Date().toISOString(),
+        dateResolved: null
+    };
+    
+    state.purchases.unshift(record);
+    saveData();
+    
+    // Reset Form
+    document.getElementById('inp-name').value = '';
+    document.getElementById('inp-price').value = '';
+    state.tempForm = { q1: null, q2: null, q3: null };
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+    updateLiveHint();
+    
+    showVerdict(record.id);
+}
+
+// === VERDICT LOGIC ===
+function calculateVerdict(q1, q2, q3) {
+    // Green only if: Q1=YES, Q2=NO, Q3=NO
+    if (q1 === true && q2 === false && q3 === false) return 'Green';
+    return 'Red';
+}
+
+function getReasons(q1, q2, q3) {
+    const reasons = [];
+    if (q1 === false) reasons.push("Ты узнал об этой вещи меньше 3 дней назад.");
+    if (q2 === true) reasons.push("Ты сам сказал, что наличные для тебя важнее этой вещи.");
+    if (q3 === true) reasons.push("Дома уже есть рабочая замена, которая закрывает эту потребность.");
+    return reasons;
+}
+
+// === SCREEN 2: SHOW VERDICT ===
+function showVerdict(id) {
+    const rec = state.purchases.find(p => p.id === id);
+    if (!rec) return;
+    state.currentId = id;
+    
+    document.getElementById('v-title').textContent = rec.name;
+    const badge = document.getElementById('v-badge');
+    const block = document.getElementById('v-block');
+    const title = document.getElementById('v-text-title');
+    const desc = document.getElementById('v-text-desc');
+    const reasonsList = document.getElementById('v-reasons');
+    const actions = document.getElementById('v-actions');
+    
+    badge.textContent = rec.verdict === 'Green' ? 'Зелёный вердикт' : 'Красный вердикт';
+    badge.style.background = rec.verdict === 'Green' ? 'var(--success)' : 'var(--accent)';
+    badge.style.color = 'white';
+    
+    block.className = `verdict-block ${rec.verdict === 'Green' ? 'verdict-green' : 'verdict-red'}`;
+    
+    const days = Math.ceil(rec.hours / 8);
+    
+    if (rec.verdict === 'Green') {
+        title.textContent = "✅ Осознанный выбор";
+        desc.innerHTML = `Это стоило тебе <b>${rec.hours} часа жизни</b>. Это <b>${days} рабочих дней</b>.<br><br>Все три ответа за покупку: обдумано, деньги не важнее вещи, замены дома нет.`;
+        reasonsList.innerHTML = "";
+        
+        actions.innerHTML = `<button class="btn-primary btn-success" onclick="makeDecision('bought')">Купил осознанно</button>`;
+    } else {
+        title.textContent = "🛑 СТОП! Дофаминовая ловушка";
+        desc.innerHTML = `Откажись и сэкономишь <b>${rec.hours} часа</b>. Это <b>${days} рабочих дней</b>.`;
+        
+        const reasons = getReasons(rec.q1, rec.q2, rec.q3);
+        reasonsList.innerHTML = reasons.map(r => `<li>${r}</li>`).join('');
+        
+        actions.innerHTML = `
+            <button class="btn-primary btn-success" onclick="makeDecision('refused')">Отказался</button>
+            <button class="btn-primary btn-danger" style="margin-top:10px;" onclick="makeDecision('bought')">Всё равно купил</button>
+        `;
+    }
+    
+    document.getElementById('v-price').textContent = formatMoney(rec.price) + ' ₽';
+    document.getElementById('v-hours').textContent = rec.hours + ' ч';
+    document.getElementById('v-date').textContent = new Date(rec.dateCheck).toLocaleDateString('ru-RU');
+    
+    goToScreen('screen-verdict');
+}
+
+function makeDecision(decision) {
+    const rec = state.purchases.find(p => p.id === state.currentId);
+    if (!rec) return;
+    
+    rec.decision = decision;
+    rec.dateResolved = new Date().toISOString();
+    saveData();
+    
+    // Show confirmation and redirect
+    alert(decision === 'refused' ? 'Записано: Отказ. Ты спас свои часы!' : 'Записано: Покупка.');
+    goToScreen('screen-wins');
+}
+
+// === SCREEN 3: HISTORY & STATS ===
+function renderHistory(filter = 'all') {
+    // Stats
+    const refused = state.purchases.filter(p => p.decision === 'refused');
+    const bought = state.purchases.filter(p => p.decision === 'bought');
+    const resolvedCount = refused.length + bought.length;
+    
+    const savedRub = refused.reduce((sum, p) => sum + p.price, 0);
+    const savedHours = refused.reduce((sum, p) => sum + parseFloat(p.hours), 0);
+    const rate = resolvedCount > 0 ? Math.round((refused.length / resolvedCount) * 100) : 0;
+    
+    document.getElementById('stat-saved-rub').textContent = formatMoney(savedRub) + ' ₽';
+    document.getElementById('stat-saved-label').textContent = refused.length > 0 ? `на ${refused.length} отказах` : 'Сберегли';
+    
+    document.getElementById('stat-saved-hours').textContent = savedHours.toFixed(1) + ' ч';
+    document.getElementById('stat-saved-days').textContent = refused.length > 0 ? `${Math.ceil(savedHours/8)} рабочих дней` : 'Сохранено часов';
+    
+    document.getElementById('stat-rate').textContent = rate + '%';
+    document.getElementById('stat-rate-label').textContent = resolvedCount > 0 ? `${refused.length} из ${resolvedCount} проверок закончились отказом` : 'Доля отказов';
+    
+    document.getElementById('count-all').textContent = state.purchases.length;
+    document.getElementById('count-refused').textContent = refused.length;
+    document.getElementById('count-bought').textContent = bought.length;
+    
+    // List
+    const list = document.getElementById('history-list');
+    let items = state.purchases;
+    if (filter === 'refused') items = refused;
+    if (filter === 'bought') items = bought;
+    
+    if (items.length === 0) {
+        list.innerHTML = `<div class="empty-state" style="text-align:center; padding:40px; color:#665544;">${filter === 'all' ? 'Проверок ещё не было' : (filter === 'refused' ? 'Отказов пока нет' : 'Осознанных покупок пока нет')}</div>`;
+        return;
+    }
+    
+    list.innerHTML = items.map(p => {
+        let statusClass = 'pending';
+        let statusText = 'Ждёт решения';
+        if (p.decision === 'refused') { statusClass = 'refused'; statusText = 'Отказ'; }
+        if (p.decision === 'bought') { statusClass = 'bought'; statusText = 'Покупка'; }
+        
+        return `
+            <div class="history-item ${statusClass}" onclick="showDecision(${p.id})">
+                <div class="item-header">
+                    <div class="item-title">${p.name}</div>
+                    <div class="item-badge">${statusText}</div>
+                </div>
+                <div class="item-details">${new Date(p.dateCheck).toLocaleDateString('ru-RU')} · ${formatMoney(p.price)} ₽ · ${p.hours} ч</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function filterHistory(type, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderHistory(type);
+}
+
+// === SCREEN 5: DECISION DETAILS ===
+function showDecision(id) {
+    const rec = state.purchases.find(p => p.id === id);
+    if (!rec) return;
+    state.currentId = id;
+    
+    document.getElementById('d-title').textContent = rec.name;
+    const badge = document.getElementById('d-badge');
+    badge.textContent = rec.verdict === 'Green' ? 'Зелёный вердикт' : 'Красный вердикт';
+    badge.style.background = rec.verdict === 'Green' ? 'var(--success)' : 'var(--accent)';
+    badge.style.color = 'white';
+    
+    // Reuse verdict block logic
+    const block = document.getElementById('d-block');
+    block.className = `verdict-block ${rec.verdict === 'Green' ? 'verdict-green' : 'verdict-red'}`;
+    const days = Math.ceil(rec.hours / 8);
+    
+    if (rec.verdict === 'Green') {
+        block.innerHTML = `<div class="verdict-title">✅ Осознанный выбор</div><div>Это стоило тебе <b>${rec.hours} часа жизни</b>.</div>`;
+    } else {
+        const reasons = getReasons(rec.q1, rec.q2, rec.q3).map(r => `<li>${r}</li>`).join('');
+        block.innerHTML = `<div class="verdict-title">🛑 СТОП!</div><div>Откажись и сэкономишь <b>${rec.hours} часа</b>.</div><ul class="verdict-reasons">${reasons}</ul>`;
+    }
+    
+    document.getElementById('d-price').textContent = formatMoney(rec.price) + ' ₽';
+    document.getElementById('d-hours').textContent = rec.hours + ' ч';
+    document.getElementById('d-date-resolved').textContent = rec.dateResolved ? new Date(rec.dateResolved).toLocaleDateString('ru-RU') : 'Не принято';
+    
+    // Answers
+    const qText = [
+        {q: rec.q1, txt: "Думал > 3 дней?", exp: rec.q1 ? "Обдуманно" : "Импульс"},
+        {q: rec.q2, txt: "Взял бы наличные?", exp: rec.q2 ? "Деньги важнее" : "Вещь важнее"},
+        {q: rec.q3, txt: "Есть аналог?", exp: rec.q3 ? "Замена есть" : "Замены нет"}
+    ];
+    document.getElementById('d-answers').innerHTML = qText.map(item => `
+        <div style="margin-bottom:8px; font-size:14px;">
+            <b>${item.txt}:</b> ${item.q ? 'Да' : 'Нет'} <span style="color:#665544">(${item.exp})</span>
+        </div>
+    `).join('');
+    
+    // Actions
+    const actions = document.getElementById('d-actions');
+    if (!rec.decision) {
+         if (rec.verdict === 'Green') {
+            actions.innerHTML = `<button class="btn-primary btn-success" onclick="updateDecision('bought')">Купил осознанно</button>`;
+         } else {
+            actions.innerHTML = `
+                <button class="btn-primary btn-success" onclick="updateDecision('refused')">Отказался</button>
+                <button class="btn-primary btn-danger" style="margin-top:10px;" onclick="updateDecision('bought')">Всё равно купил</button>
+            `;
+         }
+    } else {
+        actions.innerHTML = `<div style="text-align:center; color:#665544; margin-bottom:10px;">Решение: <b>${rec.decision === 'refused' ? 'Отказ' : 'Покупка'}</b>. Можно изменить.</div>
+        <div class="toggle-group">
+            <button class="toggle-btn ${rec.decision==='refused'?'selected':''}" onclick="updateDecision('refused')">Отказался</button>
+            <button class="toggle-btn ${rec.decision==='bought'?'selected':''}" onclick="updateDecision('bought')">Купил</button>
+        </div>`;
+    }
+    
+    goToScreen('screen-decision');
+}
+
+function updateDecision(dec) {
+    const rec = state.purchases.find(p => p.id === state.currentId);
+    if (rec) {
+        rec.decision = dec;
+        rec.dateResolved = new Date().toISOString();
+        saveData();
+        showDecision(rec.id); // Refresh UI
+    }
+}
+
+function deleteCurrentRecord() {
+    if(confirm('Удалить эту запись?')) {
+        state.purchases = state.purchases.filter(p => p.id !== state.currentId);
+        saveData();
+        goToScreen('screen-wins');
+    }
+}
+
+// === SCREEN 4: SETTINGS ===
+function updateSettingsUI() {
+    document.getElementById('set-income').value = state.settings.income;
+    document.getElementById('set-hours-month').value = state.settings.hoursMonth;
+    document.getElementById('set-hourly-rate').value = state.settings.hourlyRate.toFixed(2);
+    document.getElementById('current-rate-display').textContent = `Текущая ставка: ${state.settings.hourlyRate.toFixed(2)} ₽ в час`;
+}
+
+function checkSettingsChange() {
+    const inc = parseFloat(document.getElementById('set-income').value) || 0;
+    const hrs = parseFloat(document.getElementById('set-hours-month').value) || 1;
+    const rate = inc / hrs;
+    document.getElementById('set-hourly-rate').value = rate.toFixed(2);
+    
+    const btn = document.getElementById('btn-save-settings');
+    btn.disabled = (inc === state.settings.income && hrs === state.settings.hoursMonth);
+}
+
+function saveSettings() {
+    const inc = parseFloat(document.getElementById('set-income').value);
+    const hrs = parseFloat(document.getElementById('set-hours-month').value);
+    if (inc > 0 && hrs > 0) {
+        state.settings.income = inc;
+        state.settings.hoursMonth = hrs;
+        state.settings.hourlyRate = inc / hrs;
+        saveData();
+        updateSettingsUI();
+        alert('Стоимость часа работы обновлена');
+        document.getElementById('btn-save-settings').disabled = true;
+    }
+}
+
+function resetHistory() {
+    if(confirm('Сбросить всю историю проверок? Стоимость часа работы останется прежней.')) {
+        state.purchases = [];
+        saveData();
+        renderHistory();
+        alert('История очищена');
+    }
+}
+
+// === UTILS ===
+function formatMoney(num) {
+    return num.toLocaleString('ru-RU');
+}
+
+// Start
+init();
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+}
+</script>
+</body>
+</html>

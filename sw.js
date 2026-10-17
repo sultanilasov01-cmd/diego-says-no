@@ -1,4 +1,4 @@
-const CACHE_NAME = 'diego-v1';
+const CACHE_NAME = 'diego-v2';
 const urlsToCache = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', event => {
